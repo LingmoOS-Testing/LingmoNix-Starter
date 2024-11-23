@@ -1,0 +1,48 @@
+LingmoNix's Just Recipe!
+(c) 2024 Yaksha Project, ALL RIGHTS RESERVERD.
+Licensed under GPL-3.0 License.
+
+Usage: just <recipe>
+
+Recipes:
+  flake-init          - Initialize a Nix flake using a template.
+  flake-update        - Update the Nix flake.
+  flake-config        - Edit the NixOS flake configuration file (`/etc/nixos/flake.nix`).
+  hm-init             - Initialize Home Manager using the `home-manager-init.sh` script.
+  hm-config           - Edit the Home Manager configuration file (`/etc/nixos/home.nix`).
+  hm-switch           - Apply the Home Manager configuration using `home-manager switch`.
+  viconfig            - Edit the NixOS system configuration file (`/etc/nixos/configuration.nix`).
+  deploy              - Apply the current NixOS configuration using `nixos-rebuild switch`.
+  vm-build            - Build a NixOS virtual machine configuration using `nixos-rebuild build-vm`.
+  history             - View the history of NixOS profiles using `nix profile history`.
+  nixlsp              - Start the Nix REPL to interact with the system.
+  clean               - Remove old generations older than 7 days from the profile history.
+  gc                  - Run garbage collection on the Nix store with debug output.
+  garbage-clean       - Delete old Nix store garbage with `nix-collect-garbage --delete-old`.
+  channel-add         - Run the `channel-add.sh` script to add a new NixOS channel.
+  channel-update      - Update NixOS channels using `nix-channel --update`.
+  channel-list        - List the current NixOS channels using `nix-channel --list`.
+  rollback            - Roll back to the previous NixOS configuration using `nix-env --rollback`.
+  yaksha-update       - Update the LingmoNix configuration.
+  yaksha-ci           - Fully upgrade LingmoNix.
+  dotfiles            - Apply the dotfiles configuration.
+  dotfiles-uninstall  - Uninstall the dotfiles configuration.
+
+
+Examples:
+
+  # Initialize the flake
+  just flake-init
+  
+  # Update the flake
+  just flake-update
+  
+  # Configure Home Manager
+  just hm-config
+  
+  # Deploy the current system configuration
+  just deploy
+  
+  # Roll back to the previous configuration
+  just rollback
+
