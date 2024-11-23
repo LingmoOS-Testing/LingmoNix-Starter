@@ -13,7 +13,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # 将源码复制到 /etc/nixos 目录
-sudo cp -r /path/to/arkimium/yaksha-starter/* /etc/nixos/
+sudo cp -r ~/yaksha/* /etc/nixos/
 
 # 执行 nixos-rebuild switch 来应用更改
 sudo nixos-rebuild switch
