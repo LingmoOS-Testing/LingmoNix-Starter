@@ -1,18 +1,205 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get LingmoNix</title>
-</head>
-<body>
-    <h1>Welcome to LingmoNix</h1>
-    <p>This is the homepage of LingmoNix, you can update your issues and pull requests at the repository.</p>
-    <p>Run this command to install LingmoNix:</p> 
-    <p>git clone https://github.com/LingmoOS-Testing/LingmoNix-Starter.git ~/yaksha && cd yaksha && bash yaksha-install.sh</p>
-    <p>ENJOY THE SYSTEM!</p>
-    <p></p>
-    <p>Copyright 2024 by Yaksha Project || Licensed under GPL-3.0 License</p>
-</body>
-</html>
+#!/bin/bash
 
+# Define color variables
+LIGHT_BLUE='\033[1;34m'
+LIGHT_GREEN='\033[1;32m'
+NC='\033[0m' # No Color
+
+# Clear the screen first
+clear
+
+# Check if the script is run as root, if not, attempt to switch to root using sudo -i
+if [ "$(id -u)" -ne 0 ]; then
+    echo -e "${LIGHT_BLUE}This script requires root privileges!${NC}"
+    echo -e "${LIGHT_BLUE}Attempting to switch to root using 'sudo -i'...${NC}"
+    exec sudo -i "$0" "$@"
+    exit 1
+fi
+
+# Ensure the network is active
+if ! systemctl is-active --quiet network-online.target; then
+    echo -r "${LIGHT_BLUE}Something went wrong!${NC}"
+    echo -e "${LIGHT_BLUE}The host Network is not active!${NC}"
+    echo -e "${LIGHT_BLUE}On NixOS, please run 'systemctl start wpa_supplicant' and use 'wpa_cli' to configure the wireless network.${NC}"
+    echo -e "${LIGHT_BLUE}For more details, visit https://nixos.org/manual/nixos/stable/#sec-installation-manual-networking${NC}"
+    exit 1
+fi
+
+# Print title
+echo -e "${LIGHT_GREEN}Welcome to Yaksha!${NC}"
+echo -e "${LIGHT_GREEN}The Installation Script of LingmoNix."
+echo "---------------------------------"
+
+# Step 1: Ask the user to choose between UEFI or BIOS
+echo -e "${LIGHT_GREEN}1. Choose boot method${NC}"
+echo "Please choose the boot method:"
+select boot_type in UEFI BIOS; do
+    case $boot_type in
+        UEFI)
+            echo "Selected UEFI boot method."
+            break
+            ;;
+        BIOS)
+            echo "Selected BIOS boot method."
+            break
+            ;;
+        *)
+            echo "Invalid option, please choose again."
+            ;;
+    esac
+done
+
+# Step 2: Automatically partition the disk
+echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
+echo "Starting auto partitioning..."
+read -p "Enter the target disk device (e.g., /dev/sda): " disk
+
+# Perform partitioning based on boot type
+if [ "$boot_type" = "UEFI" ]; then
+    # UEFI boot: create EFI partition and root partition
+    parted --script "$disk" \
+        mklabel gpt \
+        mkpart root ext4 512MB -8GB \
+        mkpart swap linux-swap -8GB 100% \
+        mkpart ESP fat32 1MB 512MB
+        set 3 esp on \
+        quit
+elif [ "$boot_type" = "BIOS" ]; then
+    # BIOS boot: create BIOS boot partition and root partition
+    parted --script "$disk" \
+        mklabel msdos \
+        mkpart primary 1MB -8GB \
+        set 1 boot on \
+        mkpart primary linux-swap -8GB 100% \
+        quit
+fi
+
+if [ $? -eq 0 ]; then
+    echo -e "${LIGHT_GREEN}Partitioning complete.${NC}"
+else
+    echo -e "${LIGHT_BLUE}Partitioning failed, please check the disk device!${NC}"
+    exit 1
+fi
+
+# Step 3: Format the partitions
+echo -e "${LIGHT_GREEN}3. Formatting partitions${NC}"
+if [ "$boot_type" = "UEFI" ]; then
+    # Format EFI partition
+    mkfs.fat -F 32 "${disk}1"
+    # Format root partition
+    mkfs.ext4 "${disk}2"
+    # Mount the partitions
+    mount "${disk}2" /mnt
+    mkdir -p /mnt/boot
+    mount "${disk}1" /mnt/boot
+    nixos-generate-config --root /mnt
+elif [ "$boot_type" = "BIOS" ]; then
+    # Format root partition
+    mkfs.ext4 "${disk}2"
+    # Mount the partition
+    mount "${disk}2" /mnt
+    nixos-generate-config -root /mnt
+fi
+
+if [ $? -eq 0 ]; then
+    echo -e "${LIGHT_GREEN}Partitions formatted and mounted to /mnt${NC}"
+else
+    echo -e "${LIGHT_BLUE}Formatting failed, please check the partitions!${NC}"
+    exit 1
+fi
+
+# Step 4: Clone LingmoNix Starter repository and copy configuration files
+echo -e "${LIGHT_GREEN}4. Cloning LingmoNix Starter repository and copying configuration files${NC}"
+git clone https://github.com/LingmoOS-Testing/LingmoNix-Starter.git 
+if [ $? -ne 0 ]; then
+    echo -e "${LIGHT_BLUE}Failed to clone the repository, please check the network connection!${NC}"
+    exit 1
+fi
+
+# Offer flavor options
+echo "Please choose the flavor version to install:"
+select flavor in General Studio Neon; do
+    case $flavor in
+        General|Studio|Neon)
+            break
+            ;;
+        *)
+            echo "Invalid option, please choose again."
+            ;;
+    esac
+done
+
+# Offer language options
+echo "Please choose the language version:"
+select lang in English Chinese; do
+    case $lang in
+        English)
+            flavor_dir="${flavor,,}" # Convert flavor name to lowercase
+            break
+            ;;
+        Chinese)
+            flavor_dir="${flavor,,}-cn" # Convert flavor name to lowercase and append "-cn"
+            break
+            ;;
+        *)
+            echo "Invalid option, please choose again."
+            ;;
+    esac
+done
+
+# Copy the configuration files
+mkdir -p /mnt/etc/nixos
+cp -r "LingmoNix-Starter/${flavor_dir}/configuration.nix" /mnt/etc/nixos/configuration.nix
+if [ $? -eq 0 ]; then
+    echo -e "${LIGHT_GREEN}Configuration file copied to /mnt/etc/nixos/${NC}"
+else
+    echo -e "${LIGHT_BLUE}Failed to copy configuration file, please check the path!${NC}"
+    exit 1
+fi
+
+# Step 5: Begin NixOS installation
+echo -e "${LIGHT_GREEN}5. Starting NixOS installation${NC}"
+nixos-install
+if [ $? -eq 0 ]; then
+    echo -e "${LIGHT_GREEN}NixOS installation completed${NC}"
+else
+    echo -e "${LIGHT_BLUE}NixOS installation failed, please check the configuration file!${NC}"
+    exit 1
+fi
+
+# Step 6: Post-installation configuration
+echo -e "${LIGHT_GREEN}6. Post-installation configuration${NC}"
+
+# Ask for the username
+read -p "Please enter your username: " username
+
+# Ensure the user exists before setting the password
+if id "$username" &>/dev/null; then
+    echo "Setting password for user '$username'."
+    passwd "$username"
+    echo -e "${LIGHT_GREEN}Password for user '$username' has been set.${NC}"
+else
+    echo -e "${LIGHT_BLUE}User '$username' does not exist! Please create the user first.${NC}"
+    exit 1
+fi
+
+# Step 7: Install Cutefish Desktop (optional)
+echo -e "${LIGHT_GREEN}7. Installing Cutefish Desktop (optional)${NC}"
+read -p "[For Experimental] Would you like to install the Cutefish Desktop? (y/n): " install_cutefish
+if [[ $install_cutefish =~ ^[Yy]$ ]]; then
+    git clone https://github.com/p3psi-boo/nix-cutefish.git 
+    cd nix-cutefish && nix build
+    if [ $? -eq 0 ]; then
+        echo -e "${LIGHT_GREEN}Cutefish Desktop installed${NC}"
+    else
+        echo -e "${LIGHT_BLUE}Cutefish Desktop installation failed${NC}"
+    fi
+else
+    echo -e "${LIGHT_GREEN}Skipping Cutefish installation${NC}"
+fi
+
+# Installation complete
+logout
+echo -e "${LIGHT_GREEN}Thank you for using Yaksha!${NC}"
+echo -e "${LIGHT_GREEN}Please reboot and then remove your installation medium!${NC}"
+echo -e "${LIGHT_GREEN}ENJOY YOUR SYSTEM, GOODBYE! :)${NC}"
