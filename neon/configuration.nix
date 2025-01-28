@@ -39,6 +39,7 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+  services.xserver.displayManager.lightdm.enable = true;
   services.xserver.desktopManager.pantheon.enable = true;
 
   
@@ -51,7 +52,7 @@
   # services.printing.enable = true;
 
   # Enable sound.
-  hardware.pulseaudio.enable = true;
+  # hardware.pulseaudio.enable = true;
   # OR
   # services.pipewire = {
   #   enable = true;
@@ -68,44 +69,57 @@
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       chromium
-      tree
-      byobu
-      neofetch
-      tty-clock
-      neovim
+      python312Packages.huggingface-hub
+      lmstudio
       vscode
+      jetbrains.pycharm-community
+      pipx
+      discord
+      element
+      flatpak
+      ollama
+      gpt4all
       just
-      lynx
     ];
   };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
     curl
     git
     gh
+    fastfetch
   ];
 
-  nix.extraOptions.experimental-features = [ nix-command flakes ];
+  fonts.packages = with pkgs; [
+    jetbrains-mono
+    noto-fonts
+    texlivePackages.opensans
+    inter-nerdfont
+    nerdfonts
+    roboto
+    roboto-mono
+  ];
+
+  nix.extraOptions = ''
+  extra-experimental-features = nix-command flakes
+  '';
   nixpkgs.config.allowUnfree = true;
+  # Yes, you! Yes, don't edit the content below. Thanks :)
   environment.etc."issue".text = ''
-  <<< Welcome to LingmoNix 1 "Yaksha"! >>>
+  <<< Welcome to LingmoNix Neon 2 "Yaksha"! >>>
   A experimental project, Lingmo Software
     
   (C) 2024 Lingmo Software / LingmoNix Yaksha Project
   Licensed under GPL-3.0 LICENSE
   Nixpkgs licensed under MIT LICENSE
+  LingmoNix Neon is the flavour of LingmoNix for AI/LLM Professional Use.
 
-  To get installation guide, please visit https://github.com/LingmoOS-Testing/LingmoNix/wiki#installation_guide
+  To get the installation guide, please visit https://github.com/LingmoOS-Testing/LingmoNix/wiki#installation_guide
   LingmoOS Website: www.lingmo.org
-
-  SYSTEM INFOMATION:
-  Current NixOS Version   24.05 Stable
-  Linux Kernel Version    6.6.52
-  Built at                16 Nov, 2024
 
   "Yes, my liege :)." --Von Lycaon
   ENJOY YOUR SYSTEM!
@@ -114,7 +128,7 @@
   environment.etc."os-release".text = ''
   ANSI_COLOR="1;34"
   BUG_REPORT_URL="https://github.com/NixOS/nixpkgs/issues"
-  BUILD_ID="1-installer"
+  BUILD_ID="2"
   DOCUMENTATION_URL="https://nixos.org/learn.html"
   HOME_URL="https://lingmo.org/"
   ID=lingmoos
@@ -122,15 +136,15 @@
   IMAGE_VERSION=""
   LOGO="nix-snowflake"
   NAME=LingmoNix
-  PRETTY_NAME="LingmoNix 1 (Yaksha)"
+  PRETTY_NAME="LingmoNix Neon 2 (Yaksha)"
   SUPPORT_URL="https://nixos.org/community.html"
-  VARIANT_ID=installer
-  VERSION="1 (Yaksha)"
+  VARIANT_ID=neon
+  VERSION="2 (Yaksha)"
   VERSION_CODENAME=yaksha
-  VERSION_ID="1.0"
+  VERSION_ID="2"
 '';
 
-  nix.settings.substituters = lib.mkForce [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+  # nix.settings.substituters = lib.mkForce [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
