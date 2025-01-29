@@ -141,7 +141,7 @@
   PRETTY_NAME="LingmoNix 2 (Yaksha)"
   SUPPORT_URL="https://nixos.org/community.html"
   VARIANT_ID=general
-  VERSION="1.95 (Yaksha)"
+  VERSION="2 (Yaksha)"
   VERSION_CODENAME=yaksha
   VERSION_ID="2"
 '';
