@@ -57,8 +57,7 @@ rollback:
 
 yaksha-update:
   bash autoprocess/yaksha-update.sh
-yaksha-ci:
-  bash autoprocess/yaksha-ci.sh
+
 dotfiles:
   bash autoprocess/dots-inst.sh
 dotfiels-uninstall:
