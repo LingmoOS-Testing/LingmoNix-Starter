@@ -112,7 +112,7 @@
 
   # Don't edit these contents below!
   environment.etc."issue".text = ''
-  <<< Welcome to LingmoNix 1.95 "Yaksha"! >>>
+  <<< Welcome to LingmoNix 2 "Yaksha"! >>>
   A experimental project, Lingmo Software
     
   (C) 2025 Lingmo Software / LingmoNix Yaksha Project
@@ -130,7 +130,7 @@
   environment.etc."os-release".text = ''
   ANSI_COLOR="1;34"
   BUG_REPORT_URL="https://github.com/NixOS/nixpkgs/issues"
-  BUILD_ID="1-installer"
+  BUILD_ID="2"
   DOCUMENTATION_URL="https://nixos.org/learn.html"
   HOME_URL="https://lingmo.org/"
   ID=lingmoos
@@ -138,12 +138,12 @@
   IMAGE_VERSION=""
   LOGO="nix-snowflake"
   NAME=LingmoNix
-  PRETTY_NAME="LingmoNix 1.95 (Yaksha)"
+  PRETTY_NAME="LingmoNix 2 (Yaksha)"
   SUPPORT_URL="https://nixos.org/community.html"
-  VARIANT_ID=installer
+  VARIANT_ID=general
   VERSION="1.95 (Yaksha)"
   VERSION_CODENAME=yaksha
-  VERSION_ID="1.95"
+  VERSION_ID="2"
 '';
 
   nix.settings.substituters = lib.mkForce [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
