@@ -136,7 +136,7 @@
   VARIANT_ID=
   VERSION="2 (Yaksha)"
   VERSION_CODENAME=yaksha
-  VERSION_ID="1.95"
+  VERSION_ID="2"
 '';
 
   
