@@ -1,5 +1,5 @@
-LingmoNix's Just Recipe!
-(c) 2024 Yaksha Project, ALL RIGHTS RESERVERD.
+LingmoNix's Just Recipe! - V1.1
+(c) 2025 Yaksha Project, ALL RIGHTS RESERVERD.
 Licensed under GPL-3.0 License.
 
 Usage: just <recipe>
@@ -24,7 +24,7 @@ Recipes:
   channel-list        - List the current NixOS channels using `nix-channel --list`.
   rollback            - Roll back to the previous NixOS configuration using `nix-env --rollback`.
   yaksha-update       - Update the LingmoNix configuration.
-  yaksha-ci           - Fully upgrade LingmoNix.
+  switch              - Switch to other diiferent configurations of LingmoNix's flavours.
   dotfiles            - Apply the dotfiles configuration.
   dotfiles-uninstall  - Uninstall the dotfiles configuration.
 
