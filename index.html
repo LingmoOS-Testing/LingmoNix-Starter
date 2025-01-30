@@ -18,16 +18,36 @@ fi
 
 # Ensure the network is active
 if ! systemctl is-active --quiet network-online.target; then
-    echo -r "${LIGHT_BLUE}Something went wrong!${NC}"
+    echo -e "${LIGHT_BLUE}Something went wrong!${NC}"
     echo -e "${LIGHT_BLUE}The host Network is not active!${NC}"
-    echo -e "${LIGHT_BLUE}On NixOS, please run 'systemctl start wpa_supplicant' and use 'wpa_cli' to configure the wireless network.${NC}"
-    echo -e "${LIGHT_BLUE}For more details, visit https://nixos.org/manual/nixos/stable/#sec-installation-manual-networking${NC}"
-    exit 1
+
+    # Check if wireless network is inactive
+    if ! systemctl is-active --quiet wpa_supplicant; then
+        echo -e "${LIGHT_BLUE}Wireless network is inactive. Are you using ethernet? Checking whether the wired network is activated.${NC}"
+        
+        # Check if any wired network interface is up
+        wired_interface=$(ip link show up | grep -v 'lo\|wlan\|wlp' | awk '{print $2}' | sed 's/://')
+        
+        if [ -n "$wired_interface" ]; then
+            echo -e "${LIGHT_BLUE}Wired network interface $wired_interface is up.${NC}"
+        else
+            echo -e "${LIGHT_BLUE}Something went wrong! No wired network interface is up.${NC}"
+            echo -e "${LIGHT_BLUE}Please check if the wired network cable is plugged in or if the device is in 'down' mode.${NC}"
+            echo -e "${LIGHT_BLUE}For more details, visit https://nixos.org/manual/nixos/stable/#sec-installation-manual-networking${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${LIGHT_BLUE}Wireless network is active. Continuing the installation process.${NC}"
+    fi
 fi
+
+clear
 
 # Print title
 echo -e "${LIGHT_GREEN}Welcome to Yaksha!${NC}"
 echo -e "${LIGHT_GREEN}The Installation Script of LingmoNix."
+echo -e "(C) 2025 By Yaksha Project"
+
 echo "---------------------------------"
 
 # Step 1: Automatically detect boot mode (UEFI or BIOS)
