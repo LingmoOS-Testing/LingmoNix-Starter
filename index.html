@@ -30,24 +30,15 @@ echo -e "${LIGHT_GREEN}Welcome to Yaksha!${NC}"
 echo -e "${LIGHT_GREEN}The Installation Script of LingmoNix."
 echo "---------------------------------"
 
-# Step 1: Ask the user to choose between UEFI or BIOS
-echo -e "${LIGHT_GREEN}1. Choose boot method${NC}"
-echo "Please choose the boot method:"
-select boot_type in UEFI BIOS; do
-    case $boot_type in
-        UEFI)
-            echo "Selected UEFI boot method."
-            break
-            ;;
-        BIOS)
-            echo "Selected BIOS boot method."
-            break
-            ;;
-        *)
-            echo "Invalid option, please choose again."
-            ;;
-    esac
-done
+# Step 1: Automatically detect boot mode (UEFI or BIOS)
+echo -e "${LIGHT_GREEN}1. Detecting boot method${NC}"
+if [ -f /sys/firmware/efi/fw_platform_size ]; then
+    echo -e "${LIGHT_GREEN}UEFI boot mode detected.${NC}"
+    boot_type="UEFI"
+else
+    echo -e "${LIGHT_GREEN}BIOS boot mode detected.${NC}"
+    boot_type="BIOS"
+fi
 
 # Step 2: Automatically partition the disk
 echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
