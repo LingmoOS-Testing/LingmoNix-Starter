@@ -13,7 +13,7 @@ if [ "$(id -u)" -ne 0 ]; then
     echo -e "${LIGHT_BLUE}This script requires root privileges!${NC}"
     echo -e "${LIGHT_BLUE}Attempting to switch to root using 'sudo -i'...${NC}"
     exec sudo -i "$0" "$@"
-    exit 1
+    # exit 1
 fi
 
 # Ensure the network is active
