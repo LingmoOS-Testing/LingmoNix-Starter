@@ -60,5 +60,5 @@ yaksha-update:
 
 dotfiles:
   bash autoprocess/dots-inst.sh
-dotfiels-uninstall:
+dotfiles-uninstall:
   bash autoprocess/dots-uninst.sh
