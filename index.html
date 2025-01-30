@@ -68,7 +68,7 @@ read -p "Enter the target disk device (e.g., /dev/sda): " disk
 # Perform partitioning based on boot type
 if [ "$boot_type" = "UEFI" ]; then
     # UEFI boot: create EFI partition and root partition
-    parted --script "$disk" \
+    parted "$disk" -- \
         mklabel gpt \
         mkpart root ext4 512MB -8GB \
         mkpart swap linux-swap -8GB 100% \
@@ -77,7 +77,7 @@ if [ "$boot_type" = "UEFI" ]; then
         quit
 elif [ "$boot_type" = "BIOS" ]; then
     # BIOS boot: create BIOS boot partition and root partition
-    parted --script "$disk" \
+    parted "$disk" -- \
         mklabel msdos \
         mkpart primary 1MB -8GB \
         set 1 boot on \
