@@ -63,25 +63,32 @@ fi
 # Step 2: Automatically partition the disk
 echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
 echo "Starting auto partitioning..."
-read -p "Enter the target disk device (e.g., /dev/sda): " disk
+while true; do
+    read -p "Enter the target disk device (e.g., /dev/sda): " disk
+    if [ -b "$disk" ]; then
+        break
+    else
+        echo -e "${LIGHT_BLUE}Invalid disk device, please enter a valid device path (e.g., /dev/sda)!${NC}"
+    fi
+done
 
 # Perform partitioning based on boot type
 if [ "$boot_type" = "UEFI" ]; then
     # UEFI boot: create EFI partition and root partition
-    parted "$disk" -- \
-        mklabel gpt \
-        mkpart root ext4 512MB -8GB \
-        mkpart swap linux-swap -8GB 100% \
-        mkpart ESP fat32 1MB 512MB
-        set 3 esp on \
+    parted "$disk" \
+        -- mklabel gpt \
+        -- mkpart root ext4 512MB -8GB \
+        -- mkpart swap linux-swap -8GB 100% \
+        -- mkpart ESP fat32 1MB 512MB
+        -- set 3 esp on \
         quit
 elif [ "$boot_type" = "BIOS" ]; then
     # BIOS boot: create BIOS boot partition and root partition
-    parted "$disk" -- \
-        mklabel msdos \
-        mkpart primary 1MB -8GB \
-        set 1 boot on \
-        mkpart primary linux-swap -8GB 100% \
+    parted "$disk" \
+        -- mklabel msdos \
+        -- mkpart primary 1MB -8GB \
+        -- set 1 boot on \
+        -- mkpart primary linux-swap -8GB 100% \
         quit
 fi
 
