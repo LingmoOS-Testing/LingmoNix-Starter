@@ -63,14 +63,20 @@ fi
 # Step 2: Automatically partition the disk
 echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
 echo "Starting auto partitioning..."
-while true; do
-    read -p "Enter the target disk device (e.g., /dev/sda): " disk
-    if [ -b "$disk" ]; then
-        break
-    else
-        echo -e "${LIGHT_BLUE}Invalid disk device, please enter a valid device path (e.g., /dev/sda)!${NC}"
-    fi
-done
+echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
+read -p "Disk device: " disk
+
+if [ -z "$disk" ]; then
+    echo -e "${LIGHT_BLUE}No device entered, please provide a valid disk device!${NC}"
+    echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
+    read -p "Disk device: " disk
+fi
+
+if [ ! -b "$disk" ]; then
+    echo -e "${LIGHT_BLUE}Invalid disk device, please check and enter a valid device!${NC}"
+    echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
+    read -p "Disk device: " disk
+fi
 
 # Perform partitioning based on boot type
 if [ "$boot_type" = "UEFI" ]; then
