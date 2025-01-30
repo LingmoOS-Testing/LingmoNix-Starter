@@ -68,7 +68,7 @@ echo -e "Your host device are:"
 lsblk
 
 while true; do
-    read -p "Choose a disk: " disk
+    read -p "Choose a disk: " disk </dev/tty
 
     # Check if the input is empty
     if [ -z "$disk" ]; then
