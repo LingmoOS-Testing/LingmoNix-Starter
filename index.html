@@ -64,19 +64,30 @@ fi
 echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
 echo "Starting auto partitioning..."
 echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
-read -p "Disk device: " disk
+echo -e "Your host device are:"
+lsblk
 
-if [ -z "$disk" ]; then
-    echo -e "${LIGHT_BLUE}No device entered, please provide a valid disk device!${NC}"
-    echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
-    read -p "Disk device: " disk
-fi
+while true; do
+    read -p "Choose a disk: " disk
 
-if [ ! -b "$disk" ]; then
-    echo -e "${LIGHT_BLUE}Invalid disk device, please check and enter a valid device!${NC}"
-    echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
-    read -p "Disk device: " disk
-fi
+    # Check if the input is empty
+    if [ -z "$disk" ]; then
+        echo -e "${LIGHT_RED}No device entered, please provide a valid disk device!${NC}"
+        continue
+    fi
+
+    # Check if the input is a valid block device
+    if [ ! -b "$disk" ]; then
+        echo -e "${LIGHT_RED}Invalid disk device, please check and enter a valid device!${NC}"
+        continue
+    fi
+
+    # If the input is valid, break out of the loop
+    break
+done
+
+echo -e "${LIGHT_GREEN}You have selected the disk device: $disk${NC}"
+# Continue with the partitioning process
 
 # Perform partitioning based on boot type
 if [ "$boot_type" = "UEFI" ]; then
