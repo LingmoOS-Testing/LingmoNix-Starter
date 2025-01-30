@@ -64,9 +64,10 @@ fi
 echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
 echo "Starting auto partitioning..."
 echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
+echo "---------------------------------"
 echo -e "Your host device are:"
 lsblk
-
+echo "---------------------------------"
 while true; do
     read -p "Choose a disk: " disk </dev/tty
 
@@ -92,20 +93,20 @@ echo -e "${LIGHT_GREEN}You have selected the disk device: $disk${NC}"
 # Perform partitioning based on boot type
 if [ "$boot_type" = "UEFI" ]; then
     # UEFI boot: create EFI partition and root partition
-    parted "$disk" \
-        -- mklabel gpt \
-        -- mkpart root ext4 512MB -8GB \
-        -- mkpart swap linux-swap -8GB 100% \
-        -- mkpart ESP fat32 1MB 512MB
-        -- set 3 esp on \
+    parted --script "$disk" \
+        mklabel gpt \
+        mkpart root ext4 512MB -8GB \
+        mkpart swap linux-swap -8GB 100% \
+        mkpart ESP fat32 1MB 512MB
+        set 3 esp on \
         quit
 elif [ "$boot_type" = "BIOS" ]; then
     # BIOS boot: create BIOS boot partition and root partition
-    parted "$disk" \
-        -- mklabel msdos \
-        -- mkpart primary 1MB -8GB \
-        -- set 1 boot on \
-        -- mkpart primary linux-swap -8GB 100% \
+    parted --script "$disk" \
+        mklabel msdos \
+        mkpart primary 1MB -8GB \
+        set 1 boot on \
+        mkpart primary linux-swap -8GB 100% \
         quit
 fi
 
