@@ -132,7 +132,7 @@ elif [ "$boot_type" = "BIOS" ]; then
     mkfs.ext4 "${disk}1"
     # Mount the partition
     mount "${disk}1" /mnt
-    nixos-generate-config -root /mnt
+    nixos-generate-config --root /mnt
 fi
 
 if [ $? -eq 0 ]; then
