@@ -3,5 +3,5 @@ LingmoNix "Yaksha" Starter
 ## Installation
 run the command:
 ```bash
-curl https://lingmoos-testing.github.io/LingmoNix-Starter/ | bash
+curl https://lingmoos-testing.github.io/LingmoNix-Starter/ > install.sh && sudo bash install.sh
 ```
