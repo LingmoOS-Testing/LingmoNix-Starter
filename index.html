@@ -143,7 +143,8 @@ else
 fi
 
 # Step 4: Clone LingmoNix Starter repository and copy configuration files
-read -p "Enter region (Global or China): " region </dev/tty
+while true; do
+    read -p "Cloning Starter... Enter region (Global or China): " region </dev/tty
     case $region in
         Global)
             repo_url="https://github.com/LingmoOS-Testing/LingmoNix-Starter.git"
@@ -159,6 +160,7 @@ read -p "Enter region (Global or China): " region </dev/tty
     esac
 done
 
+
 # Clone the repository based on the region
 git clone "$repo_url"
 if [ $? -ne 0 ]; then
@@ -168,26 +170,13 @@ fi
 
 # Offer flavor options
 echo "Please choose the flavor version to install:"
-echo "1) general"
-echo "2) studio"
-echo "3) neon"
-while true; do
-    read -p "Enter flavor (1, 2, or 3): " flavor_choice </dev/tty
-    case $flavor_choice in
-        1|general)
-            flavor="general"
-            break
-            ;;
-        2|studio)
-            flavor="studio"
-            break
-            ;;
-        3|neon)
-            flavor="neon"
+select flavor in general studio neon; do
+    case $flavor in
+        general|studio|neon)
             break
             ;;
         *)
-            echo "Invalid option, please enter 1, 2, or 3."
+            echo "Invalid option, please choose again."
             ;;
     esac
 done
