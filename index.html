@@ -136,19 +136,40 @@ elif [ "$boot_type" = "BIOS" ]; then
 fi
 
 if [ $? -eq 0 ]; then
+    echo ""
     echo -e "${LIGHT_GREEN}Partitions formatted and mounted to /mnt${NC}"
 else
+    echo ""
     echo -e "${LIGHT_BLUE}Formatting failed, please check the partitions and then try again!${NC}"
     exit 1
 fi
 
 # Step 4: Clone LingmoNix Starter repository and copy configuration files
-echo -e "${LIGHT_GREEN}4. Cloning LingmoNix Starter repository and copying configuration files${NC}"
-git clone https://github.com/LingmoOS-Testing/LingmoNix-Starter.git 
+echo -e "${LIGHT_GREEN}4. Cloning LingmoNix Starter${NC}"
+echo "Please choose your region:"
+select region in "Global" "China"; do
+    case $region in
+        Global)
+            repo_url="https://github.com/LingmoOS-Testing/LingmoNix-Starter.git"
+            break
+            ;;
+        China)
+            repo_url="https://gitee.com/arkimium_76/LingmoNix-Starter.git"
+            break
+            ;;
+        *)
+            echo "Invalid option, please choose again."
+            ;;
+    esac
+done
+
+# Clone the repository based on the region
+git clone "$repo_url"
 if [ $? -ne 0 ]; then
     echo -e "${LIGHT_BLUE}Failed to clone the repository, please check the network connection!${NC}"
     exit 1
 fi
+
 
 # Offer flavor options
 echo "Please choose the flavor version to install:"
@@ -182,7 +203,6 @@ select lang in English Chinese; do
 done
 
 # Copy the configuration files
-mkdir -p /mnt/etc/nixos
 cp -r "LingmoNix-Starter/${flavor_dir}/configuration.nix" /mnt/etc/nixos/configuration.nix
 if [ $? -eq 0 ]; then
     echo ""
@@ -194,8 +214,19 @@ else
 fi
 
 # Step 5: Begin NixOS installation
-echo -e "${LIGHT_GREEN}5. Starting NixOS installation${NC}"
-nixos-install -j 8 --cores 1
+echo -e "${LIGHT_GREEN}5. Starting NixOS installation${NC}..."
+
+# Ask for region preference for installation mirrors
+if [ "$region" = "China" ]; then
+    # Use Tsinghua mirror for China
+    echo -e "${LIGHT_GREEN}Using Tsinghua mirror for China...${NC}"
+    echo "Installation begin... Using Jobs: 8; Using Cores: 1 (By default)"
+    nixos-install -j 8 --cores 1 --option subsitituters https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store
+else
+    echo "Installation begin... Using Jobs: 8; Using Cores: 1 (By default)"
+    nixos-install -j 8 --cores 1
+fi
+
 if [ $? -eq 0 ]; then
     echo -e "${LIGHT_GREEN}NixOS installation completed${NC}"
 else
@@ -224,7 +255,7 @@ echo -e "${LIGHT_GREEN}7. Installing Cutefish Desktop (optional)${NC}"
 read -p "[For Experimental] Would you like to install the Cutefish Desktop? (y/n): " install_cutefish </dev/tty
 
 if [[ $install_cutefish =~ ^[Yy]$ ]]; then
-    git clone https://github.com/p3psi-boo/nix-cutefish.git 
+    # Install Cutefish Desktop from the region-specific repository
     cd nix-cutefish && nix build
     if [ $? -eq 0 ]; then
         echo -e "${LIGHT_GREEN}Cutefish Desktop installed${NC}"
@@ -237,6 +268,7 @@ fi
 
 # Installation complete
 logout
+echo "---------------------------------"
 echo -e "${LIGHT_GREEN}Thank you for using Yaksha!${NC}"
 echo -e "${LIGHT_GREEN}Please reboot and then remove your installation medium!${NC}"
 echo -e "${LIGHT_GREEN}ENJOY YOUR SYSTEM, GOODBYE! :)${NC}"
