@@ -220,6 +220,7 @@ fi
 # Step 7: Install Cutefish Desktop (optional)
 echo -e "${LIGHT_GREEN}7. Installing Cutefish Desktop (optional)${NC}"
 read -p "[For Experimental] Would you like to install the Cutefish Desktop? (y/n): " install_cutefish </dev/tty
+
 if [[ $install_cutefish =~ ^[Yy]$ ]]; then
     git clone https://github.com/p3psi-boo/nix-cutefish.git 
     cd nix-cutefish && nix build
