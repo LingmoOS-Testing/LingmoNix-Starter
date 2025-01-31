@@ -203,7 +203,6 @@ while true; do
 done
 
 # Copy the configuration files
-mkdir -p /mnt/etc/nixos
 cp -r "LingmoNix-Starter/${flavor_dir}/configuration.nix" /mnt/etc/nixos/configuration.nix
 if [ $? -eq 0 ]; then
     echo -e "${LIGHT_GREEN}Configuration file copied to /mnt/etc/nixos/${NC}"
@@ -213,14 +212,20 @@ else
 fi
 
 # Step 5: Begin NixOS installation
-echo -e "${LIGHT_GREEN}5. Starting NixOS installation${NC}"
-nixos-install -j 8 --cores 1
+echo -e "${LIGHT_GREEN}Starting NixOS installation${NC}..."
+if [ "$region" = "China" ]; then
+    echo -e "${LIGHT_GREEN}Using Tsinghua mirror for China...${NC}"
+    nixos-install -j 8 --cores 1 --option substituters https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store
+else
+    nixos-install -j 8 --cores 1
+fi
 if [ $? -eq 0 ]; then
     echo -e "${LIGHT_GREEN}NixOS installation completed${NC}"
 else
-    echo -e "${LIGHT_BLUE}NixOS installation failed, please check the configuration file!${NC}"
+    echo -e "${LIGHT_RED}NixOS installation failed!${NC}"
     exit 1
 fi
+
 
 # Step 6: Post-installation configuration
 echo -e "${LIGHT_GREEN}6. Post-installation configuration${NC}"
