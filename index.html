@@ -214,8 +214,8 @@ fi
 # Step 5: Begin NixOS installation
 echo -e "${LIGHT_GREEN}Starting NixOS installation${NC}..."
 if [ "$region" = "China" ]; then
-    echo -e "${LIGHT_GREEN}Using Tsinghua mirror for China...${NC}"
-    nixos-install -j 8 --cores 1 --option substituters https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store
+    echo -e "${LIGHT_GREEN}Using University of Science and Technology of China's mirror for China...${NC}"
+    nixos-install -j 8 --cores 1 --option substituters https://mirrors.ustc.edu.cn/nix-channels/store
 else
     nixos-install -j 8 --cores 1
 fi
