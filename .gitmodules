@@ -1,0 +1,7 @@
+[submodule "nix-cutefish"]
+	path = ~/LingmoNix-Starter/general-cn/nix-cutefish/
+  url = https://github.com/p3psi-boo/nix-cutefish
+
+[submodule "nix-cutefish"]
+  path = ~/LingmoNix-Starter/general/nix-cutefish/
+  url = https://github.com/p3psi-boo/nix-cutefish
