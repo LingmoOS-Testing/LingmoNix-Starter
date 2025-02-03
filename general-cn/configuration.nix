@@ -100,17 +100,7 @@
     jetbrains-mono
     texlivePackages.opensans
     inter-nerdfont
-    nerd-fonts.jetBrains-mono
-    nerd-fonts.zed-mono
-    nerd-fonts.symbols-only
-    nerd-fonts.terminless
-    nerd-fonts.ubuntu
-    nerd-fonts.ubuntu-mono
-    nerd-fonts.ubuntu-sans
-    nerd-fonts.victor-mono
-    nerd-fonts.noto
-    nerd-fonts.lilex
-    nerd-fonts.literation-mono
+    nerdfonts
     roboto
     roboto-mono
   ];
