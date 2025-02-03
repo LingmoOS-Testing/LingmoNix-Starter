@@ -1,7 +1,4 @@
 [submodule "nix-cutefish"]
   path = general-cn/nix-cutefish/
   url = https://github.com/p3psi-boo/nix-cutefish
-
-[submodule "nix-cutefish"]
-  path = general/nix-cutefish/
-  url = https://github.com/p3psi-boo/nix-cutefish
+  branch = main
