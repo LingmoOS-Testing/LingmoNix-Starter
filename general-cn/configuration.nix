@@ -100,7 +100,7 @@
     jetbrains-mono
     texlivePackages.opensans
     inter-nerdfont
-    nerdfonts
+    nerdfonts     # Deprecated since NixOS 25.05
     roboto
     roboto-mono
   ];
