@@ -13,65 +13,97 @@ if [ "$(id -u)" -ne 0 ]; then
     echo -e "${LIGHT_BLUE}This script requires root privileges!${NC}"
     echo -e "${LIGHT_BLUE}Attempting to switch to root using 'sudo -i'...${NC}"
     exec sudo -i "$0" "$@"
-    exit 1
+    # exit 1
 fi
 
 # Ensure the network is active
 if ! systemctl is-active --quiet network-online.target; then
-    echo -r "${LIGHT_BLUE}Something went wrong!${NC}"
+    echo -e "${LIGHT_BLUE}Something went wrong!${NC}"
     echo -e "${LIGHT_BLUE}The host Network is not active!${NC}"
-    echo -e "${LIGHT_BLUE}On NixOS, please run 'systemctl start wpa_supplicant' and use 'wpa_cli' to configure the wireless network.${NC}"
-    echo -e "${LIGHT_BLUE}For more details, visit https://nixos.org/manual/nixos/stable/#sec-installation-manual-networking${NC}"
-    exit 1
+
+    # Check if wireless network is inactive
+    if ! systemctl is-active --quiet wpa_supplicant; then
+        echo -e "${LIGHT_BLUE}Wireless network is inactive. Are you using ethernet? Checking whether the wired network is activated.${NC}"
+        
+        # Check if any wired network interface is up
+        wired_interface=$(ip link show up | grep -v 'lo\|wlan\|wlp' | awk '{print $2}' | sed 's/://')
+        
+        if [ -n "$wired_interface" ]; then
+            echo -e "${LIGHT_BLUE}Wired network interface $wired_interface is up.${NC}"
+        else
+            echo -e "${LIGHT_BLUE}Something went wrong! No wired network interface is up.${NC}"
+            echo -e "${LIGHT_BLUE}Please check if the wired network cable is plugged in or if the device is in 'down' mode.${NC}"
+            echo -e "${LIGHT_BLUE}For more details, visit https://nixos.org/manual/nixos/stable/#sec-installation-manual-networking${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${LIGHT_BLUE}Wireless network is active. Continuing the installation process.${NC}"
+    fi
 fi
+
+clear
 
 # Print title
 echo -e "${LIGHT_GREEN}Welcome to Yaksha!${NC}"
 echo -e "${LIGHT_GREEN}The Installation Script of LingmoNix."
+echo -e "(C) 2025 By Yaksha Project"
+echo -e "This script is only for INSTALL LingmoNix AS SINGLE BOOT."
+echo -e "Dual-boot is not supported."
 echo "---------------------------------"
 
-# Step 1: Ask the user to choose between UEFI or BIOS
-echo -e "${LIGHT_GREEN}1. Choose boot method${NC}"
-echo "Please choose the boot method:"
-select boot_type in UEFI BIOS; do
-    case $boot_type in
-        UEFI)
-            echo "Selected UEFI boot method."
-            break
-            ;;
-        BIOS)
-            echo "Selected BIOS boot method."
-            break
-            ;;
-        *)
-            echo "Invalid option, please choose again."
-            ;;
-    esac
-done
+# Step 1: Automatically detect boot mode (UEFI or BIOS)
+echo -e "${LIGHT_GREEN}1. Detecting boot method${NC}"
+if [ -f /sys/firmware/efi/fw_platform_size ]; then
+    echo -e "${LIGHT_GREEN}UEFI boot mode detected.${NC}"
+    boot_type="UEFI"
+else
+    echo -e "${LIGHT_GREEN}BIOS boot mode detected.${NC}"
+    boot_type="BIOS"
+fi
 
 # Step 2: Automatically partition the disk
 echo -e "${LIGHT_GREEN}2. Auto partitioning${NC}"
 echo "Starting auto partitioning..."
-read -p "Enter the target disk device (e.g., /dev/sda): " disk
+echo -e "${LIGHT_BLUE}Please enter the target disk device (e.g., /dev/sda):${NC}"
+echo "---------------------------------"
+echo -e "Your host device are:"
+lsblk
+echo "---------------------------------"
+while true; do
+    read -p "Choose a disk: " disk </dev/tty
+
+    # Check if the input is empty
+    if [ -z "$disk" ]; then
+        echo -e "${LIGHT_RED}No device entered, please provide a valid disk device!${NC}"
+        continue
+    fi
+
+    # Check if the input is a valid block device
+    if [ ! -b "$disk" ]; then
+        echo -e "${LIGHT_RED}Invalid disk device, please check and enter a valid device!${NC}"
+        continue
+    fi
+
+    # If the input is valid, break out of the loop
+    break
+done
+
+echo -e "${LIGHT_GREEN}You have selected the disk device: $disk${NC}"
+# Continue with the partitioning process
 
 # Perform partitioning based on boot type
 if [ "$boot_type" = "UEFI" ]; then
     # UEFI boot: create EFI partition and root partition
-    parted --script "$disk" \
-        mklabel gpt \
-        mkpart root ext4 512MB -8GB \
-        mkpart swap linux-swap -8GB 100% \
-        mkpart ESP fat32 1MB 512MB
-        set 3 esp on \
-        quit
+    parted "$disk" -- mklabel gpt
+    parted "$disk" -- mkpart primary 512MB -8GB
+    parted "$disk" -- mkpart primary linux-swap -8GB 100%
+    parted "$disk" -- mkpart ESP fat32 1MB 512MB
+    quit
 elif [ "$boot_type" = "BIOS" ]; then
     # BIOS boot: create BIOS boot partition and root partition
-    parted --script "$disk" \
-        mklabel msdos \
-        mkpart primary 1MB -8GB \
-        set 1 boot on \
-        mkpart primary linux-swap -8GB 100% \
-        quit
+    parted "$disk" -- mklabel msdos
+    parted "$disk" -- mkpart primary 1MB -8GB
+    parted "$disk" -- mkpart primary linux-swap -8GB 100%
 fi
 
 if [ $? -eq 0 ]; then
@@ -85,32 +117,52 @@ fi
 echo -e "${LIGHT_GREEN}3. Formatting partitions${NC}"
 if [ "$boot_type" = "UEFI" ]; then
     # Format EFI partition
-    mkfs.fat -F 32 "${disk}1"
+    mkfs.ext4 "${disk}1"
     # Format root partition
-    mkfs.ext4 "${disk}2"
+    mkswap "${disk}2" && swapon "${disk}2"
+    # Format ESP partition
+    mkfs.fat -F 32 "${disk}3"
     # Mount the partitions
-    mount "${disk}2" /mnt
+    mount "${disk}1" /mnt
     mkdir -p /mnt/boot
-    mount "${disk}1" /mnt/boot
+    mount "${disk}3" /mnt/boot
     nixos-generate-config --root /mnt
 elif [ "$boot_type" = "BIOS" ]; then
     # Format root partition
-    mkfs.ext4 "${disk}2"
+    mkfs.ext4 "${disk}1"
     # Mount the partition
-    mount "${disk}2" /mnt
-    nixos-generate-config -root /mnt
+    mount "${disk}1" /mnt
+    nixos-generate-config --root /mnt
 fi
 
 if [ $? -eq 0 ]; then
     echo -e "${LIGHT_GREEN}Partitions formatted and mounted to /mnt${NC}"
 else
-    echo -e "${LIGHT_BLUE}Formatting failed, please check the partitions!${NC}"
+    echo -e "${LIGHT_BLUE}Formatting failed, please check the partitions and then try again!${NC}"
     exit 1
 fi
 
 # Step 4: Clone LingmoNix Starter repository and copy configuration files
-echo -e "${LIGHT_GREEN}4. Cloning LingmoNix Starter repository and copying configuration files${NC}"
-git clone https://github.com/LingmoOS-Testing/LingmoNix-Starter.git 
+while true; do
+    read -p "Cloning Starter... Enter region (Global or China): " region </dev/tty
+    case $region in
+        Global)
+            repo_url="https://github.com/LingmoOS-Testing/LingmoNix-Starter.git"
+            break
+            ;;
+        China)
+            repo_url="https://gitee.com/arkimium_76/LingmoNix-Starter.git"
+            break
+            ;;
+        *)
+            echo "Invalid option, please enter 'Global' or 'China'."
+            ;;
+    esac
+done
+
+
+# Clone the repository based on the region
+git clone "$repo_url"
 if [ $? -ne 0 ]; then
     echo -e "${LIGHT_BLUE}Failed to clone the repository, please check the network connection!${NC}"
     exit 1
@@ -118,9 +170,9 @@ fi
 
 # Offer flavor options
 echo "Please choose the flavor version to install:"
-select flavor in General Studio Neon; do
+select flavor in general studio neon; do
     case $flavor in
-        General|Studio|Neon)
+        general|studio|neon)
             break
             ;;
         *)
@@ -131,24 +183,26 @@ done
 
 # Offer language options
 echo "Please choose the language version:"
-select lang in English Chinese; do
-    case $lang in
-        English)
+echo "1) English"
+echo "2) Chinese"
+while true; do
+    read -p "Enter language (1 or 2): " lang_choice </dev/tty
+    case $lang_choice in
+        1|English)
             flavor_dir="${flavor,,}" # Convert flavor name to lowercase
             break
             ;;
-        Chinese)
+        2|Chinese)
             flavor_dir="${flavor,,}-cn" # Convert flavor name to lowercase and append "-cn"
             break
             ;;
         *)
-            echo "Invalid option, please choose again."
+            echo "Invalid option, please enter 1 or 2."
             ;;
     esac
 done
 
 # Copy the configuration files
-mkdir -p /mnt/etc/nixos
 cp -r "LingmoNix-Starter/${flavor_dir}/configuration.nix" /mnt/etc/nixos/configuration.nix
 if [ $? -eq 0 ]; then
     echo -e "${LIGHT_GREEN}Configuration file copied to /mnt/etc/nixos/${NC}"
@@ -158,20 +212,26 @@ else
 fi
 
 # Step 5: Begin NixOS installation
-echo -e "${LIGHT_GREEN}5. Starting NixOS installation${NC}"
-nixos-install
+echo -e "${LIGHT_GREEN}Starting NixOS installation${NC}..."
+if [ "$region" = "China" ]; then
+    echo -e "${LIGHT_GREEN}Using University of Science and Technology of China's mirror for China...${NC}"
+    nixos-install -j 8 --cores 1 --option substituters https://mirrors.ustc.edu.cn/nix-channels/store
+else
+    nixos-install -j 8 --cores 1
+fi
 if [ $? -eq 0 ]; then
     echo -e "${LIGHT_GREEN}NixOS installation completed${NC}"
 else
-    echo -e "${LIGHT_BLUE}NixOS installation failed, please check the configuration file!${NC}"
+    echo -e "${LIGHT_RED}NixOS installation failed!${NC}"
     exit 1
 fi
+
 
 # Step 6: Post-installation configuration
 echo -e "${LIGHT_GREEN}6. Post-installation configuration${NC}"
 
 # Ask for the username
-read -p "Please enter your username: " username
+read -p "Please enter your username: " username </dev/tty
 
 # Ensure the user exists before setting the password
 if id "$username" &>/dev/null; then
@@ -179,13 +239,14 @@ if id "$username" &>/dev/null; then
     passwd "$username"
     echo -e "${LIGHT_GREEN}Password for user '$username' has been set.${NC}"
 else
-    echo -e "${LIGHT_BLUE}User '$username' does not exist! Please create the user first.${NC}"
-    exit 1
+    echo -e "${LIGHT_BLUE}User '$username' does not exist! Please try again!${NC}"
+    continue
 fi
 
 # Step 7: Install Cutefish Desktop (optional)
 echo -e "${LIGHT_GREEN}7. Installing Cutefish Desktop (optional)${NC}"
-read -p "[For Experimental] Would you like to install the Cutefish Desktop? (y/n): " install_cutefish
+read -p "[For Experimental] Would you like to install the Cutefish Desktop? (y/n): " install_cutefish </dev/tty
+
 if [[ $install_cutefish =~ ^[Yy]$ ]]; then
     git clone https://github.com/p3psi-boo/nix-cutefish.git 
     cd nix-cutefish && nix build
