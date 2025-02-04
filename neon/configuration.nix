@@ -123,7 +123,7 @@
   <<< Welcome to LingmoNix Neon 2 "Yaksha"! >>>
   A experimental project, Lingmo Software
     
-  (C) 2024 Lingmo Software / LingmoNix Yaksha Project
+  (C) 2025 Lingmo Software / LingmoNix Yaksha Project
   Licensed under GPL-3.0 LICENSE
   Nixpkgs licensed under MIT LICENSE
   LingmoNix Neon is the flavour of LingmoNix for AI/LLM Professional Use.
