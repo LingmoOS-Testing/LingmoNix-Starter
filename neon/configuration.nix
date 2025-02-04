@@ -78,6 +78,8 @@
       element
       flatpak
       ollama
+      oterm
+      nextjs-ollama-llm-ui
       gpt4all
       just
     ];
