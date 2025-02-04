@@ -110,7 +110,6 @@
     nerd-fonts.noto
     nerd-fonts.lilex
     nerd-fonts.liberation
-    noto-fonts
     roboto
     roboto-mono
   ];
