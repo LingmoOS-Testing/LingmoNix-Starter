@@ -70,6 +70,7 @@
     packages = with pkgs; [
       chromium
       vscode
+      docker
       jetbrains.writerside
       jetbrains.webstorm
       jetbrains.rust-rover
@@ -88,9 +89,9 @@
       android-tools
       android-studio-for-platform
       anbox
-      discord
-      element
-      gitbutler
+      feishu
+      qq
+      github-desktopff
       just
     ];
   };
@@ -115,17 +116,7 @@
     jetbrains-mono
     texlivePackages.opensans
     inter-nerdfont
-    nerd-fonts.jetbrains-mono
-    nerd-fonts.zed-mono
-    nerd-fonts.symbols-only
-    nerd-fonts.terminess-ttf
-    nerd-fonts.ubuntu
-    nerd-fonts.ubuntu-mono
-    nerd-fonts.ubuntu-sans
-    nerd-fonts.victor-mono
-    nerd-fonts.noto
-    nerd-fonts.lilex
-    nerd-fonts.liberation
+    noto-fonts
     roboto
     roboto-mono
   ];
