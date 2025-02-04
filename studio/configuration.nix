@@ -70,6 +70,7 @@
     packages = with pkgs; [
       chromium
       vscode
+      docker
       jetbrains.writerside
       jetbrains.webstorm
       jetbrains.rust-rover
@@ -90,7 +91,7 @@
       anbox
       discord
       element
-      gitbutler
+      github-desktop
       just
     ];
   };
